@@ -1,0 +1,53 @@
+{
+  "name": "@bitcode/ui-schema",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Standalone UI schema definitions — domain-agnostic, framework-neutral types for schema-driven UI",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./schema": {
+      "types": "./src/schema/index.ts",
+      "default": "./src/schema/index.ts"
+    },
+    "./reactive": {
+      "types": "./src/reactive/index.ts",
+      "default": "./src/reactive/index.ts"
+    },
+    "./types": {
+      "types": "./src/types.ts",
+      "default": "./src/types.ts"
+    },
+    "./expressions": {
+      "types": "./src/expressions/index.ts",
+      "default": "./src/expressions/index.ts"
+    },
+    "./actions": {
+      "types": "./src/actions/index.ts",
+      "default": "./src/actions/index.ts"
+    },
+    "./block-catalog": {
+      "types": "./src/block-catalog/index.ts",
+      "default": "./src/block-catalog/index.ts"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "test"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/run-tests.mjs",
+    "validate-catalog": "node --experimental-strip-types scripts/validate-catalog.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^26.0.1",
+    "typescript": "^5.4.0"
+  }
+}

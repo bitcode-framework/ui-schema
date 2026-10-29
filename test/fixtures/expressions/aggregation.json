@@ -1,0 +1,91 @@
+{
+  "name": "aggregation",
+  "description": "Aggregation operators (sum/count/min/max/avg) over list args + array.* call functions.",
+  "category": "aggregation",
+  "cases": [
+    {
+      "id": "AGG-001",
+      "description": "op.sum over literal list via array literal-less nodes — aggregation operates on a single list arg",
+      "expr": { "kind": "op", "op": "sum", "args": [ { "kind": "call", "fn": "array.from", "args": [ { "kind": "literal", "value": 1 }, { "kind": "literal", "value": 2 }, { "kind": "literal", "value": 3 } ] } ] },
+      "scope": { "values": {}, "meta": {}, "data": {}, "services": {}, "permissions": {} },
+      "expect": { "kind": "value", "value": 6 }
+    },
+    {
+      "id": "AGG-002",
+      "description": "op.count of a path-resolved list",
+      "expr": { "kind": "op", "op": "count", "args": [ { "kind": "path", "path": "data.items" } ] },
+      "scope": { "values": {}, "meta": {}, "data": { "items": [ { "n": 1 }, { "n": 2 }, { "n": 3 } ] }, "services": {}, "permissions": {} },
+      "expect": { "kind": "value", "value": 3 }
+    },
+    {
+      "id": "AGG-003",
+      "description": "op.min of numbers",
+      "expr": { "kind": "op", "op": "min", "args": [ { "kind": "call", "fn": "array.from", "args": [ { "kind": "literal", "value": 4 }, { "kind": "literal", "value": 1 }, { "kind": "literal", "value": 3 } ] } ] },
+      "scope": { "values": {}, "meta": {}, "data": {}, "services": {}, "permissions": {} },
+      "expect": { "kind": "value", "value": 1 }
+    },
+    {
+      "id": "AGG-004",
+      "description": "op.max of numbers",
+      "expr": { "kind": "op", "op": "max", "args": [ { "kind": "call", "fn": "array.from", "args": [ { "kind": "literal", "value": 4 }, { "kind": "literal", "value": 9 }, { "kind": "literal", "value": 3 } ] } ] },
+      "scope": { "values": {}, "meta": {}, "data": {}, "services": {}, "permissions": {} },
+      "expect": { "kind": "value", "value": 9 }
+    },
+    {
+      "id": "AGG-005",
+      "description": "op.avg of numbers",
+      "expr": { "kind": "op", "op": "avg", "args": [ { "kind": "call", "fn": "array.from", "args": [ { "kind": "literal", "value": 2 }, { "kind": "literal", "value": 4 }, { "kind": "literal", "value": 6 } ] } ] },
+      "scope": { "values": {}, "meta": {}, "data": {}, "services": {}, "permissions": {} },
+      "expect": { "kind": "value", "value": 4 }
+    },
+    {
+      "id": "AGG-006",
+      "description": "op.sum over list of objects via array.map + op.add projection (host-agnostic)",
+      "expr": { "kind": "op", "op": "sum", "args": [ { "kind": "path", "path": "data.quantities" } ] },
+      "scope": { "values": {}, "meta": {}, "data": { "quantities": [ 10, 20, 5 ] }, "services": {}, "permissions": {} },
+      "expect": { "kind": "value", "value": 35 }
+    },
+    {
+      "id": "AGG-007",
+      "description": "op.count of empty list",
+      "expr": { "kind": "op", "op": "count", "args": [ { "kind": "call", "fn": "array.from", "args": [] } ] },
+      "scope": { "values": {}, "meta": {}, "data": {}, "services": {}, "permissions": {} },
+      "expect": { "kind": "value", "value": 0 }
+    },
+    {
+      "id": "AGG-008",
+      "description": "op.min of empty list is an error (no defined minimum)",
+      "expr": { "kind": "op", "op": "min", "args": [ { "kind": "call", "fn": "array.from", "args": [] } ] },
+      "scope": { "values": {}, "meta": {}, "data": {}, "services": {}, "permissions": {} },
+      "expect": { "kind": "error", "code": "EXPR_OP_TYPE" }
+    },
+    {
+      "id": "AGG-009",
+      "description": "aggregation on non-list arg is a type error",
+      "expr": { "kind": "op", "op": "sum", "args": [ { "kind": "literal", "value": 5 } ] },
+      "scope": { "values": {}, "meta": {}, "data": {}, "services": {}, "permissions": {} },
+      "expect": { "kind": "error", "code": "EXPR_OP_TYPE" }
+    },
+    {
+      "id": "AGG-010",
+      "description": "array.length call on a list",
+      "expr": { "kind": "call", "fn": "array.length", "args": [ { "kind": "path", "path": "data.items" } ] },
+      "scope": { "values": {}, "meta": {}, "data": { "items": [ 1, 2, 3, 4 ] }, "services": {}, "permissions": {} },
+      "expect": { "kind": "value", "value": 4 }
+    },
+    {
+      "id": "AGG-011",
+      "description": "array.includes call returns boolean",
+      "expr": { "kind": "call", "fn": "array.includes", "args": [ { "kind": "path", "path": "data.tags" }, { "kind": "literal", "value": "vip" } ] },
+      "scope": { "values": {}, "meta": {}, "data": { "tags": [ "new", "vip", "active" ] }, "services": {}, "permissions": {} },
+      "expect": { "kind": "value", "value": true }
+    },
+    {
+      "id": "AGG-012",
+      "description": "array.includes returns false for absent",
+      "expr": { "kind": "call", "fn": "array.includes", "args": [ { "kind": "path", "path": "data.tags" }, { "kind": "literal", "value": "banned" } ] },
+      "scope": { "values": {}, "meta": {}, "data": { "tags": [ "new", "vip" ] }, "services": {}, "permissions": {} },
+      "expect": { "kind": "value", "value": false }
+    }
+  ]
+}

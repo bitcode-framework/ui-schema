@@ -1,0 +1,84 @@
+{
+  "name": "null-propagation",
+  "description": "Strict null handling: arithmetic/comparison on null throws EXPR_OP_TYPE. coalesce/if(null,...) handle null explicitly. No silent coercion.",
+  "category": "null",
+  "cases": [
+    {
+      "id": "null-coalesce-first-null",
+      "description": "coalesce returns second arg when first is null",
+      "expr": { "kind": "op", "op": "coalesce", "args": [ { "kind": "path", "path": "values.maybe" }, { "kind": "literal", "value": "fallback" } ] },
+      "scope": { "values": { "maybe": null }, "meta": {}, "data": {}, "services": {}, "permissions": { "superuser": true } },
+      "expect": { "kind": "value", "value": "fallback" }
+    },
+    {
+      "id": "null-coalesce-first-present",
+      "description": "coalesce returns first arg when it is a non-null value",
+      "expr": { "kind": "op", "op": "coalesce", "args": [ { "kind": "path", "path": "values.name" }, { "kind": "literal", "value": "fallback" } ] },
+      "scope": { "values": { "name": "Ada" }, "meta": {}, "data": {}, "services": {}, "permissions": { "superuser": true } },
+      "expect": { "kind": "value", "value": "Ada" }
+    },
+    {
+      "id": "null-coalesce-first-empty-string",
+      "description": "coalesce treats empty string as a present value (not null) and returns it",
+      "expr": { "kind": "op", "op": "coalesce", "args": [ { "kind": "path", "path": "values.s" }, { "kind": "literal", "value": "fallback" } ] },
+      "scope": { "values": { "s": "" }, "meta": {}, "data": {}, "services": {}, "permissions": { "superuser": true } },
+      "expect": { "kind": "value", "value": "" }
+    },
+    {
+      "id": "null-add-throws",
+      "description": "arithmetic add with a null operand throws EXPR_OP_TYPE (strict, no coercion)",
+      "expr": { "kind": "op", "op": "add", "args": [ { "kind": "path", "path": "values.qty" }, { "kind": "literal", "value": null } ] },
+      "scope": { "values": { "qty": 5 }, "meta": {}, "data": {}, "services": {}, "permissions": { "superuser": true } },
+      "expect": { "kind": "error", "code": "EXPR_OP_TYPE" }
+    },
+    {
+      "id": "null-eq-throws",
+      "description": "eq with a null operand throws EXPR_OP_TYPE; use coalesce or isEmpty for null checks",
+      "expr": { "kind": "op", "op": "eq", "args": [ { "kind": "path", "path": "values.x" }, { "kind": "literal", "value": null } ] },
+      "scope": { "values": { "x": null }, "meta": {}, "data": {}, "services": {}, "permissions": { "superuser": true } },
+      "expect": { "kind": "error", "code": "EXPR_OP_TYPE" }
+    },
+    {
+      "id": "null-isempty-true",
+      "description": "isEmpty on null returns true",
+      "expr": { "kind": "op", "op": "isEmpty", "args": [ { "kind": "path", "path": "values.maybe" } ] },
+      "scope": { "values": { "maybe": null }, "meta": {}, "data": {}, "services": {}, "permissions": { "superuser": true } },
+      "expect": { "kind": "value", "value": true }
+    },
+    {
+      "id": "null-isnotempty-false",
+      "description": "isNotEmpty on null returns false",
+      "expr": { "kind": "op", "op": "isNotEmpty", "args": [ { "kind": "path", "path": "values.maybe" } ] },
+      "scope": { "values": { "maybe": null }, "meta": {}, "data": {}, "services": {}, "permissions": { "superuser": true } },
+      "expect": { "kind": "value", "value": false }
+    },
+    {
+      "id": "null-isempty-empty-string-true",
+      "description": "isEmpty on empty string returns true",
+      "expr": { "kind": "op", "op": "isEmpty", "args": [ { "kind": "path", "path": "values.s" } ] },
+      "scope": { "values": { "s": "" }, "meta": {}, "data": {}, "services": {}, "permissions": { "superuser": true } },
+      "expect": { "kind": "value", "value": true }
+    },
+    {
+      "id": "null-isempty-empty-list-true",
+      "description": "isEmpty on empty list returns true",
+      "expr": { "kind": "op", "op": "isEmpty", "args": [ { "kind": "path", "path": "data.items" } ] },
+      "scope": { "values": {}, "meta": {}, "data": { "items": [] }, "services": {}, "permissions": { "superuser": true, "allowedDataKeys": ["items"] } },
+      "expect": { "kind": "value", "value": true }
+    },
+    {
+      "id": "null-isempty-nonempty-false",
+      "description": "isEmpty on a populated list returns false",
+      "expr": { "kind": "op", "op": "isEmpty", "args": [ { "kind": "path", "path": "data.items" } ] },
+      "scope": { "values": {}, "meta": {}, "data": { "items": [1,2,3] }, "services": {}, "permissions": { "superuser": true, "allowedDataKeys": ["items"] } },
+      "expect": { "kind": "value", "value": false }
+    },
+    {
+      "id": "null-literal-node",
+      "description": "literal null evaluates to null",
+      "expr": { "kind": "literal", "value": null },
+      "scope": { "values": {}, "meta": {}, "data": {}, "services": {}, "permissions": { "superuser": true } },
+      "expect": { "kind": "value", "value": null }
+    }
+  ]
+}

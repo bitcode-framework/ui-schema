@@ -1,0 +1,91 @@
+{
+  "name": "paths",
+  "description": "Path resolution: dotted paths, indexed access, nested objects, missing paths, reserved scope roots.",
+  "category": "path",
+  "cases": [
+    {
+      "id": "path-01",
+      "description": "simple values path",
+      "expr": { "kind": "path", "path": "values.qty" },
+      "scope": { "values": { "qty": 5 }, "meta": {}, "data": {}, "services": {}, "permissions": { "allowedValueFields": ["qty"] } },
+      "expect": { "kind": "value", "value": 5 }
+    },
+    {
+      "id": "path-02",
+      "description": "nested object path",
+      "expr": { "kind": "path", "path": "values.customer.address.zip" },
+      "scope": { "values": { "customer": { "address": { "zip": "12345" } } }, "meta": {}, "data": {}, "services": {}, "permissions": { "allowedValueFields": ["customer"] } },
+      "expect": { "kind": "value", "value": "12345" }
+    },
+    {
+      "id": "path-03",
+      "description": "indexed array access",
+      "expr": { "kind": "path", "path": "data.items[0].price" },
+      "scope": { "values": {}, "meta": {}, "data": { "items": [{ "price": 9.99 }, { "price": 19.99 }] }, "services": {}, "permissions": { "allowedDataKeys": ["items"] } },
+      "expect": { "kind": "value", "value": 9.99 }
+    },
+    {
+      "id": "path-04",
+      "description": "meta scope root",
+      "expr": { "kind": "path", "path": "meta.touched" },
+      "scope": { "values": {}, "meta": { "touched": true }, "data": {}, "services": {}, "permissions": {} },
+      "expect": { "kind": "value", "value": true }
+    },
+    {
+      "id": "path-05",
+      "description": "permissions.facts path",
+      "expr": { "kind": "path", "path": "permissions.facts.canApprove" },
+      "scope": { "values": {}, "meta": {}, "data": {}, "services": {}, "permissions": { "facts": { "canApprove": true } } },
+      "expect": { "kind": "value", "value": true }
+    },
+    {
+      "id": "path-06",
+      "description": "args scope root",
+      "expr": { "kind": "path", "path": "args.fn" },
+      "scope": { "values": {}, "meta": {}, "data": {}, "services": {}, "permissions": {}, "args": { "fn": 42 } },
+      "expect": { "kind": "value", "value": 42 }
+    },
+    {
+      "id": "path-07",
+      "description": "missing path at root",
+      "expr": { "kind": "path", "path": "values.missing" },
+      "scope": { "values": {}, "meta": {}, "data": {}, "services": {}, "permissions": { "allowedValueFields": ["missing"] } },
+      "expect": { "kind": "error", "code": "EXPR_PATH_MISSING", "pathPattern": "values.missing" }
+    },
+    {
+      "id": "path-08",
+      "description": "missing nested path",
+      "expr": { "kind": "path", "path": "values.customer.name" },
+      "scope": { "values": { "customer": {} }, "meta": {}, "data": {}, "services": {}, "permissions": { "allowedValueFields": ["customer"] } },
+      "expect": { "kind": "error", "code": "EXPR_PATH_MISSING", "pathPattern": "values.customer.name" }
+    },
+    {
+      "id": "path-09",
+      "description": "index out of bounds",
+      "expr": { "kind": "path", "path": "data.items[5].price" },
+      "scope": { "values": {}, "meta": {}, "data": { "items": [{ "price": 9.99 }] }, "services": {}, "permissions": { "allowedDataKeys": ["items"] } },
+      "expect": { "kind": "error", "code": "EXPR_PATH_MISSING", "pathPattern": "data.items.5" }
+    },
+    {
+      "id": "path-10",
+      "description": "malformed path (double dot)",
+      "expr": { "kind": "path", "path": "values..qty" },
+      "scope": { "values": { "qty": 5 }, "meta": {}, "data": {}, "services": {}, "permissions": { "allowedValueFields": ["qty"] } },
+      "expect": { "kind": "error", "code": "EXPR_PATH_MALFORMED" }
+    },
+    {
+      "id": "path-11",
+      "description": "malformed path (leading dot)",
+      "expr": { "kind": "path", "path": ".values.qty" },
+      "scope": { "values": { "qty": 5 }, "meta": {}, "data": {}, "services": {}, "permissions": { "allowedValueFields": ["qty"] } },
+      "expect": { "kind": "error", "code": "EXPR_PATH_MALFORMED" }
+    },
+    {
+      "id": "path-12",
+      "description": "unknown scope root",
+      "expr": { "kind": "path", "path": "globals.window" },
+      "scope": { "values": {}, "meta": {}, "data": {}, "services": {}, "permissions": {} },
+      "expect": { "kind": "error", "code": "EXPR_PATH_MALFORMED" }
+    }
+  ]
+}

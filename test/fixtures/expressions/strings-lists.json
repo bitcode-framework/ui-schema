@@ -1,0 +1,77 @@
+{
+  "name": "strings-lists",
+  "description": "String and list operators: concat, contains, startsWith, endsWith. Plus mixed list/string coercion checks.",
+  "category": "string-list",
+  "cases": [
+    {
+      "id": "sl-concat-strings",
+      "description": "concat of two strings",
+      "expr": { "kind": "op", "op": "concat", "args": [ { "kind": "literal", "value": "Hello, " }, { "kind": "path", "path": "values.name" } ] },
+      "scope": { "values": { "name": "World" }, "meta": {}, "data": {}, "services": {}, "permissions": { "facts": {} } },
+      "expect": { "kind": "value", "value": "Hello, World" }
+    },
+    {
+      "id": "sl-concat-string-list-coerce-error",
+      "description": "concat with a list operand is a type error (no implicit list->string)",
+      "expr": { "kind": "op", "op": "concat", "args": [ { "kind": "literal", "value": "items: " }, { "kind": "path", "path": "data.tags" } ] },
+      "scope": { "values": {}, "meta": {}, "data": { "tags": ["a","b"] }, "services": {}, "permissions": { "facts": {} } },
+      "expect": { "kind": "error", "code": "EXPR_OP_TYPE" }
+    },
+    {
+      "id": "sl-contains-string",
+      "description": "contains on a string (substring)",
+      "expr": { "kind": "op", "op": "contains", "args": [ { "kind": "path", "path": "values.email" }, { "kind": "literal", "value": "@" } ] },
+      "scope": { "values": { "email": "a@b.com" }, "meta": {}, "data": {}, "services": {}, "permissions": { "facts": {} } },
+      "expect": { "kind": "value", "value": true }
+    },
+    {
+      "id": "sl-contains-list",
+      "description": "contains on a list (membership)",
+      "expr": { "kind": "op", "op": "contains", "args": [ { "kind": "path", "path": "data.roles" }, { "kind": "literal", "value": "admin" } ] },
+      "scope": { "values": {}, "meta": {}, "data": { "roles": ["admin","user"] }, "services": {}, "permissions": { "facts": {} } },
+      "expect": { "kind": "value", "value": true }
+    },
+    {
+      "id": "sl-contains-not-found",
+      "description": "contains on a list, value absent",
+      "expr": { "kind": "op", "op": "contains", "args": [ { "kind": "path", "path": "data.roles" }, { "kind": "literal", "value": "superadmin" } ] },
+      "scope": { "values": {}, "meta": {}, "data": { "roles": ["admin","user"] }, "services": {}, "permissions": { "facts": {} } },
+      "expect": { "kind": "value", "value": false }
+    },
+    {
+      "id": "sl-startsWith",
+      "description": "startsWith on a string",
+      "expr": { "kind": "op", "op": "startsWith", "args": [ { "kind": "path", "path": "values.code" }, { "kind": "literal", "value": "INV-" } ] },
+      "scope": { "values": { "code": "INV-2026-001" }, "meta": {}, "data": {}, "services": {}, "permissions": { "facts": {} } },
+      "expect": { "kind": "value", "value": true }
+    },
+    {
+      "id": "sl-endsWith",
+      "description": "endsWith on a string",
+      "expr": { "kind": "op", "op": "endsWith", "args": [ { "kind": "path", "path": "values.file" }, { "kind": "literal", "value": ".pdf" } ] },
+      "scope": { "values": { "file": "report.pdf" }, "meta": {}, "data": {}, "services": {}, "permissions": { "facts": {} } },
+      "expect": { "kind": "value", "value": true }
+    },
+    {
+      "id": "sl-startsWith-list-error",
+      "description": "startsWith on a list is a type error (lists have no prefix concept in v1)",
+      "expr": { "kind": "op", "op": "startsWith", "args": [ { "kind": "path", "path": "data.roles" }, { "kind": "literal", "value": "admin" } ] },
+      "scope": { "values": {}, "meta": {}, "data": { "roles": ["admin","user"] }, "services": {}, "permissions": { "facts": {} } },
+      "expect": { "kind": "error", "code": "EXPR_OP_TYPE" }
+    },
+    {
+      "id": "sl-concat-three",
+      "description": "concat is variadic over strings",
+      "expr": { "kind": "op", "op": "concat", "args": [ { "kind": "literal", "value": "a" }, { "kind": "literal", "value": "b" }, { "kind": "literal", "value": "c" } ] },
+      "scope": { "values": {}, "meta": {}, "data": {}, "services": {}, "permissions": { "facts": {} } },
+      "expect": { "kind": "value", "value": "abc" }
+    },
+    {
+      "id": "sl-concat-empty",
+      "description": "concat with zero args returns empty string",
+      "expr": { "kind": "op", "op": "concat", "args": [] },
+      "scope": { "values": {}, "meta": {}, "data": {}, "services": {}, "permissions": { "facts": {} } },
+      "expect": { "kind": "value", "value": "" }
+    }
+  ]
+}
