@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ui-schema — Reactive Form Engine</title>
+<meta name="description" content="Interactive demo of @bitcode/ui-schema: a headless, framework-neutral reactive engine for schema-driven forms. Runs entirely in your browser.">
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --panel-2: #1e222b;
+    --border: #2a2f3a;
+    --text: #e6e8ec;
+    --muted: #8b93a3;
+    --accent: #22d3ee;
+    --ok: #4ade80;
+    --warn: #fbbf24;
+    --err: #f87171;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --panel-2: #f0f2f5;
+      --border: #d8dce3;
+      --text: #1a1d23;
+      --muted: #616b7c;
+      --accent: #0891b2;
+      --ok: #15803d;
+      --warn: #b45309;
+      --err: #b91c1c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    min-height: 100vh;
+  }
+  header {
+    padding: 0.85rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+    background: var(--panel);
+  }
+  header h1 { font-size: 1rem; margin: 0; font-weight: 650; letter-spacing: -0.01em; }
+  header h1 a { color: inherit; text-decoration: none; }
+  header h1 a:hover { color: var(--accent); }
+  .tag {
+    font-size: 0.7rem; color: var(--muted); border: 1px solid var(--border);
+    padding: 0.15rem 0.45rem; border-radius: 999px; font-family: var(--mono);
+  }
+  .spacer { flex: 1; }
+  header nav { display: flex; gap: 1rem; font-size: 0.82rem; }
+  header nav a { color: var(--muted); text-decoration: none; }
+  header nav a:hover { color: var(--accent); }
+
+  .lede {
+    max-width: 68ch;
+    margin: 1.75rem auto 0;
+    padding: 0 1.5rem;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+  .lede strong { color: var(--text); }
+
+  main {
+    max-width: 1180px;
+    margin: 1.5rem auto 3rem;
+    padding: 0 1.5rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 1.25rem;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    main { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .card-head {
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel-2);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-weight: 650;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .card-body { padding: 1rem 1.1rem; }
+
+  .scenarios { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem; }
+  .scenarios button {
+    font: inherit;
+    font-size: 0.78rem;
+    padding: 0.32rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--muted);
+    cursor: pointer;
+    transition: color .15s, border-color .15s, background .15s;
+  }
+  .scenarios button:hover { color: var(--text); }
+  .scenarios button[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #06171c;
+    font-weight: 650;
+  }
+
+  .field { margin-bottom: 0.95rem; }
+  .field:last-child { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+  }
+  .field label .req { color: var(--err); margin-left: 0.15rem; }
+  .field input, .field select {
+    width: 100%;
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 0.45rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--text);
+  }
+  .field input:focus-visible, .field select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  .field input:disabled, .field select:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .field.hidden { display: none; }
+  .field .hint { font-size: 0.72rem; color: var(--muted); margin-top: 0.25rem; }
+  .field .error { font-size: 0.72rem; color: var(--err); margin-top: 0.25rem; }
+  .field input[aria-invalid="true"] { border-color: var(--err); }
+
+  .check { display: flex; align-items: center; gap: 0.5rem; }
+  .check input { width: auto; }
+  .check label { margin: 0; font-weight: 500; }
+
+  .state {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 22rem;
+    overflow: auto;
+  }
+  .state .key { color: var(--accent); }
+  .state .bool-true { color: var(--ok); }
+  .state .bool-false { color: var(--err); }
+
+  .rules-list {
+    margin: 0; padding-left: 1.1rem;
+    font-size: 0.78rem; color: var(--muted); line-height: 1.7;
+  }
+  .rules-list code { font-family: var(--mono); color: var(--text); font-size: 0.75rem; }
+
+  .log { margin-top: 1.25rem; }
+  .log ol {
+    margin: 0; padding-left: 1.3rem;
+    font-family: var(--mono); font-size: 0.74rem;
+    color: var(--muted); line-height: 1.75;
+    max-height: 9rem; overflow: auto;
+  }
+  .log ol li::marker { color: var(--border); }
+
+  footer {
+    text-align: center;
+    padding: 2rem 1.5rem 3rem;
+    color: var(--muted);
+    font-size: 0.78rem;
+  }
+  footer a { color: var(--muted); }
+  footer a:hover { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1><a href="https://github.com/bitcode-framework/ui-schema">ui-schema</a> <span class="tag">reactive engine demo</span></h1>
+  <span class="spacer"></span>
+  <nav>
+    <a href="https://github.com/bitcode-framework/ui-schema">GitHub</a>
+    <a href="https://bitcode-framework.github.io/ui/">ui (React)</a>
+    <a href="https://bitcode-framework.github.io/ui-flutter/">ui-flutter</a>
+  </nav>
+</header>
+
+<p class="lede">
+  <strong>@bitcode/ui-schema</strong> is the canonical, framework-neutral source of UI schema types
+  and the headless reactive engine behind every BitCode renderer. It has no DOM dependency:
+  reactions are pure functions over a value store, so the same definitions drive React, Vue,
+  React Native, Flutter, and plain HTML.
+  <br><br>
+  Everything below runs client-side from the actual package source. Change a field and watch
+  the declared reactions recompute.
+</p>
+
+<main>
+  <section class="card">
+    <div class="card-head">
+      <span>Rendered form</span>
+    </div>
+    <div class="card-body">
+      <div class="scenarios" id="scenarios" role="group" aria-label="Scenario"></div>
+      <div id="form"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <span>ReactiveStore state</span>
+      <span class="spacer"></span>
+      <span id="run-count" class="tag">0 runs</span>
+    </div>
+    <div class="card-body">
+      <pre class="state" id="state"></pre>
+      <div class="log">
+        <div class="card-head" style="background:none;border:0;padding:0 0 .4rem;">Change log</div>
+        <ol id="log"></ol>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" style="grid-column: 1 / -1;">
+    <div class="card-head">
+      <span>Reactions declared in this scenario</span>
+    </div>
+    <div class="card-body">
+      <ul class="rules-list" id="rules"></ul>
+    </div>
+  </section>
+</main>
+
+<footer>
+  Part of the <a href="https://github.com/bitcode-framework">BitCode Framework</a> —
+  <a href="https://bitcode-framework.github.io/ui/">ui</a> ·
+  <a href="https://bitcode-framework.github.io/ui-flutter/">ui-flutter</a> ·
+  <a href="https://bitcode-framework.github.io/go-json/">go-json</a> ·
+  <a href="https://bitcode-framework.github.io/expr-js/">expr-js</a>
+</footer>
+
+<script type="module" src="playground.js"></script>
+</body>
+</html>

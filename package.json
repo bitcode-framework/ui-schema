@@ -44,10 +44,12 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "node scripts/run-tests.mjs",
-    "validate-catalog": "node --experimental-strip-types scripts/validate-catalog.mjs"
+    "validate-catalog": "node --experimental-strip-types scripts/validate-catalog.mjs",
+    "demo:build": "node scripts/build-demo.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.0.1",
+    "esbuild": "^0.28.0",
     "typescript": "^5.4.0"
   }
 }
